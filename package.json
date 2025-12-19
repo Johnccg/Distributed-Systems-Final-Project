@@ -1,0 +1,19 @@
+{
+  "name": "distributed-systems-final-project",
+  "version": "1.0.0",
+  "description": "Distributed chat system prototype for the final project of distributed systems class",
+  "main": "server/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Johnccg/Distributed-Systems-Final-Project.git"
+  },
+  "author": "Juan Carlos Calderón García - 2902729273",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Johnccg/Distributed-Systems-Final-Project/issues"
+  },
+  "homepage": "https://github.com/Johnccg/Distributed-Systems-Final-Project#readme"
+}
