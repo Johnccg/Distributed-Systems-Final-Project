@@ -43,7 +43,7 @@ function createWS(port) {
 
 let ws = createWS(port);
 
-roomInput.onchange = () => {
+serverInput.onchange = () => {
     ws.close();
     const newPort = serverInput.value || 3000;
     ws = createWS(newPort);
