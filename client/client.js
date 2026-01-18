@@ -30,8 +30,7 @@ function createWS(port) {
     sendBtn.onclick = () => {
         const payload = {
             sender: senderInput.value || "anon",
-            room: "general",
-            // room: roomInput.value || "general",
+            room: roomInput.value || "general",
             content: messageInput.value
         };
         ws.send(JSON.stringify(payload));

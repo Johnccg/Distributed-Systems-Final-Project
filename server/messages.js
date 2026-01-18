@@ -1,7 +1,10 @@
-const { pub } = require("./redis")
+const { pub, sub } = require("./redis")
 const Message = require("./models/message")
 
-async function handleMessage(raw) {
+const roomSubscriptions = new Set();
+
+// Recieves the raw message from websocket, arses it, saves it to mongodb, and publishes it to redis
+async function handleMessage(raw, wss) {
     let message
 
     try {
@@ -10,22 +13,44 @@ async function handleMessage(raw) {
         return;
     }
 
+    if (message.room) {
+        handleSubscription(message.room, wss);
+    }
+
     await Message.create(message);
-    pub.publish("chat", JSON.stringify(message));
+
+    const channel = `room:${message.room}`;
+    pub.publish(channel, JSON.stringify(message));
 }
 
+// Handles a new websocket connection, first sending the last 20 messages in the "general" room, then setting up the message handler
 async function handleConnection(ws, wss) {
-    const history = await Message.find({ room: "general" })
-        .sort({ timestamp: 1 })
-        .limit(20);
+    let currentRoom = null;
 
-    history.forEach(msg => {
-        ws.send(JSON.stringify(msg));
-    });
+    ws.on("message", async (raw) => {
+        let msg;
 
-    ws.on("message", msg => handleMessage(msg));
+        try {
+            msg = JSON.parse(raw.toString());
+        } catch {
+            return;
+        }
 
-    ws.on("message", msg => handleMessage(msg, wss));
+        // First message defines the room
+        if (!currentRoom && msg.room) {
+            currentRoom = msg.room;
+
+            const history = await Message.find({ room: currentRoom })
+                .sort({ timestamp: 1 })
+                .limit(20);
+
+            history.forEach(m => {
+                ws.send(JSON.stringify(m));
+            });
+        }
+
+        handleMessage(raw, wss);
+    })
 }
 
 function handleBroadcast(wss, message) {
@@ -34,4 +59,17 @@ function handleBroadcast(wss, message) {
     });
 }
 
-module.exports = { handleMessage, handleConnection, handleBroadcast };
+// Subscribes to a room channel in redis, if not already subscribed
+function handleSubscription(room, wss) {
+    const channel = `room:${room}`;
+
+    if (roomSubscriptions.has(channel)) return;
+
+    roomSubscriptions.add(channel);
+
+    sub.subscribe(channel, message => {
+        handleBroadcast(wss, message);
+    });
+}
+
+module.exports = { handleMessage, handleConnection, handleBroadcast, handleSubscription };

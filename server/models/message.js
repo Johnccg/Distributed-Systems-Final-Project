@@ -4,7 +4,6 @@ module.exports = mongoose.model(
     new mongoose.Schema({
         room: String,
         sender: String,
-        content: String,
-        timestamp: Number
+        content: String
     })
 );
