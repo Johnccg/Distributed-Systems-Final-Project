@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Johnccg/Distributed-Systems-Final-Project#readme",
   "dependencies": {
+    "mongoose": "^9.1.4",
     "nodemon": "^3.1.11",
     "redis": "^5.10.0",
     "ws": "^8.19.0"
