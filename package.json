@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Johnccg/Distributed-Systems-Final-Project#readme",
   "dependencies": {
     "nodemon": "^3.1.11",
+    "redis": "^5.10.0",
     "ws": "^8.19.0"
   }
 }
