@@ -1,5 +1,7 @@
 const { pub, sub } = require("./redis")
+const { randomUUID } = require("crypto");
 const Message = require("./models/message")
+const { seen } = require("./dedupe");
 
 const roomSubscriptions = new Set();
 
@@ -12,12 +14,28 @@ async function handleMessage(raw, wss) {
     } catch {
         return;
     }
+    message.timestamp = Date.now();
+    if (!message.id) {
+        message.id = randomUUID();
+    }
 
     if (message.room) {
         handleSubscription(message.room, wss);
     }
 
-    await Message.create(message);
+    if (await seen(message.id)) {
+        return;
+    }
+
+    try {
+        await Message.create(message);
+    } catch (err) {
+        //Duplicate key error, ignore
+        if (err.code === 11000) {
+            return;
+        }
+        throw err;
+    }
 
     const channel = `room:${message.room}`;
     pub.publish(channel, JSON.stringify(message));
