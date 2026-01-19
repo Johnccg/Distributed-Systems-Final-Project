@@ -1,7 +1,8 @@
 const { sub } = require("./redis");
 
-const roomMembers = new Map(); // room -> Set<ws>
+const roomMembers = new Map();
 
+// Joins a websocket to a room, subscribing to its messages
 function joinRoom(ws, room) {
     if (ws.currentRoom) leaveRoom(ws);
 
@@ -22,6 +23,7 @@ function joinRoom(ws, room) {
     roomMembers.get(room).add(ws);
 }
 
+// Leaves a websocket from its current room, unsubscribing if empty
 function leaveRoom(ws) {
     const room = ws.currentRoom;
     if (!room) return;

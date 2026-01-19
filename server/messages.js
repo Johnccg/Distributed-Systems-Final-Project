@@ -15,7 +15,9 @@ async function sendRoomHistory(ws, room) {
     });
 }
 
-// Recieves the raw message from websocket, arses it, saves it to mongodb, and publishes it to redis
+// Recieves the raw message from websocket, parses it
+// if it's a join message, switches room and sends history
+// if it's not saves it to mongodb, and publishes it to redis
 async function handleMessage(ws, raw) {
     let message
 
@@ -55,9 +57,10 @@ async function handleMessage(ws, raw) {
     await pub.publish(channel, JSON.stringify(message));
 }
 
-// Handles a new websocket connection, first sending the last 20 messages in the "general" room, then setting up the message handler
-async function handleConnection(ws, wss) {
-    ws.currentRoom = "general";
+// Handles a new websocket connection, first connects to general by default, then sends the last 20 messages in the room,
+// then sets up the message handler
+async function handleConnection(ws) {
+    console.log(`Client connected to server on port ${process.env.PORT}`);
 
     joinRoom(ws, "general");
 

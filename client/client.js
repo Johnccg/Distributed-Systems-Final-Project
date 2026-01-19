@@ -5,13 +5,14 @@ const messageInput = document.getElementById("message");
 const chat = document.getElementById("chat");
 const sendBtn = document.getElementById("send");
 
-const port = serverInput.value || 3000;
+//const port = serverInput.value || 3000;
 
-function createWS(port) {
-    const ws = new WebSocket(`ws://localhost:${port}`);
+function createWS(/*port*/) {
+    // const ws = new WebSocket(`ws://localhost:${port}`);
+    const ws = new WebSocket(`ws://localhost:8080`);
 
     ws.onopen = () => {
-        chat.textContent += `[connected ${port}]\n`
+        chat.textContent += `[connected]\n`
     };
 
     ws.onmessage = event => {
@@ -40,13 +41,13 @@ function createWS(port) {
     return ws;
 }
 
-let ws = createWS(port);
+let ws = createWS(/*port*/);
 
-serverInput.onchange = () => {
-    ws.close();
-    const newPort = serverInput.value || 3000;
-    ws = createWS(newPort);
-}
+// serverInput.onchange = () => {
+//     ws.close();
+//     const newPort = serverInput.value || 3000;
+//     ws = createWS(newPort);
+// }
 
 roomInput.onchange = () => {
     ws.send(JSON.stringify({
