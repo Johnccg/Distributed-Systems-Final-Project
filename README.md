@@ -19,7 +19,7 @@ npm install
 
 ### 3. Setup docker container
 ```powershell
-docker compose up -d
+docker compose up --build
 ```
 
 ## Running the project
