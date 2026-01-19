@@ -1,9 +1,7 @@
 # Distributed-Systems-Final-Project
 
-Github link: https://github.com/Johnccg/Distributed-Systems-Final-Project.git 
-
 ## Prerequisites:
-In order to run this project  yo will need to already have insatlled the following:
+In order to run this project you will need to already have insatalled the following:
 - Node.js
 - Docker
 
@@ -41,4 +39,5 @@ $env:PORT=3001; npm start
 In order to run multiple instances of the server each command  needs to be run in separate terminals
 
 ### Client
+
 To run an instance of the client simply navigate to the client folder, and open index.html
