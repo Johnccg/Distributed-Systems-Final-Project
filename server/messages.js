@@ -1,12 +1,22 @@
-const { pub, sub } = require("./redis")
+const { pub } = require("./redis")
 const { randomUUID } = require("crypto");
 const Message = require("./models/message")
 const { seen } = require("./dedupe");
+const { joinRoom, leaveRoom } = require("./room");
 
-const roomSubscriptions = new Set();
+// Loads and sends the last 20 messages from a room to a client
+async function sendRoomHistory(ws, room) {
+    const history = await Message.find({ room })
+        .sort({ timestamp: 1 })
+        .limit(20);
+
+    history.forEach(m => {
+        ws.send(JSON.stringify(m));
+    });
+}
 
 // Recieves the raw message from websocket, arses it, saves it to mongodb, and publishes it to redis
-async function handleMessage(raw, wss) {
+async function handleMessage(ws, raw) {
     let message
 
     try {
@@ -14,13 +24,17 @@ async function handleMessage(raw, wss) {
     } catch {
         return;
     }
+
+    if (message.type === "join") {
+        const newRoom = message.room || "general";
+        joinRoom(ws, newRoom);
+        await sendRoomHistory(ws, newRoom);
+        return;
+    }
+
     message.timestamp = Date.now();
     if (!message.id) {
         message.id = randomUUID();
-    }
-
-    if (message.room) {
-        handleSubscription(message.room, wss);
     }
 
     if (await seen(message.id)) {
@@ -37,57 +51,24 @@ async function handleMessage(raw, wss) {
         throw err;
     }
 
-    const channel = `room:${message.room}`;
-    pub.publish(channel, JSON.stringify(message));
+    const channel = `room:${ws.currentRoom}`;
+    await pub.publish(channel, JSON.stringify(message));
 }
 
 // Handles a new websocket connection, first sending the last 20 messages in the "general" room, then setting up the message handler
 async function handleConnection(ws, wss) {
-    let currentRoom = null;
+    ws.currentRoom = "general";
+
+    joinRoom(ws, "general");
+
+    await sendRoomHistory(ws, "general");
 
     ws.on("message", async (raw) => {
-        let msg;
-
-        try {
-            msg = JSON.parse(raw.toString());
-        } catch {
-            return;
-        }
-
-        // First message defines the room
-        if (!currentRoom && msg.room) {
-            currentRoom = msg.room;
-
-            const history = await Message.find({ room: currentRoom })
-                .sort({ timestamp: 1 })
-                .limit(20);
-
-            history.forEach(m => {
-                ws.send(JSON.stringify(m));
-            });
-        }
-
-        handleMessage(raw, wss);
+        handleMessage(ws, raw);
+    })
+    ws.on("close", () => {
+        leaveRoom(ws)
     })
 }
 
-function handleBroadcast(wss, message) {
-    wss.clients.forEach(c => {
-        if (c.readyState === 1) c.send(message);
-    });
-}
-
-// Subscribes to a room channel in redis, if not already subscribed
-function handleSubscription(room, wss) {
-    const channel = `room:${room}`;
-
-    if (roomSubscriptions.has(channel)) return;
-
-    roomSubscriptions.add(channel);
-
-    sub.subscribe(channel, message => {
-        handleBroadcast(wss, message);
-    });
-}
-
-module.exports = { handleMessage, handleConnection, handleBroadcast, handleSubscription };
+module.exports = { handleMessage, handleConnection };

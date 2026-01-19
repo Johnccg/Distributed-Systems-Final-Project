@@ -47,3 +47,12 @@ serverInput.onchange = () => {
     const newPort = serverInput.value || 3000;
     ws = createWS(newPort);
 }
+
+roomInput.onchange = () => {
+    ws.send(JSON.stringify({
+        type: "join",
+        room: roomInput.value
+    }));
+
+    chat.textContent = ""; // optional UX
+};
