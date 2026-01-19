@@ -25,18 +25,21 @@ docker compose up -d
 ## Running the project
 
 ### Server
-In order to start you can run an instance in the default port (3000)
+
+Once the docker container is running the server starts automatically, in order to run the server locally go to ```dedupe.js```, ```index.js```, `````redis.js``` and swap the commented lines with the uncommented line below.
+
+Then you can run an instance in the default port (3000)
 ```powershell
 npm start
 ```
 
-Once you have verified the project is able to run, instances can be run in different ports by defining the port when starting the server
+Or run instances in different ports by defining the port when starting the server
 ```powershell
 $env:PORT=3000; npm start
 $env:PORT=3001; npm start
 ```
 
-In order to run multiple instances of the server each command  needs to be run in separate terminals
+To run multiple instances of the server each command  needs to be run in separate terminals
 
 ### Client
 

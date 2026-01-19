@@ -1,10 +1,9 @@
 const { createClient } = require("redis");
-// const pub = createClient();
-// const sub = createClient();
 
 const redisUrl = "redis://redis:6379";
 
 // Publisher client
+// const pub = createClient();
 const pub = createClient({
     url: redisUrl,
     socket: {
@@ -13,6 +12,7 @@ const pub = createClient({
 });
 
 // Subscriber client
+// const sub = createClient();
 const sub = createClient({
     url: redisUrl,
     socket: {
